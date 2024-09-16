@@ -1,0 +1,689 @@
+---
+title: "captstone project google_cycle_trip"
+author: "Dongyuan Gao"
+date: "2024-09-09"
+output: html_document
+---
+
+
+#### R Markdown
+This is an R Markdown document. 
+
+
+# Capstone Project of Google Data Analyst Certificate 
+#### -Case study: How does a bike-share navigate speedy success?
+#### Introduction
+##### Welcome to the Cyclistic bike-share analysis case study! In this case study, you work for a fictional company, Cyclistic, along with some key team members. In order to answer the business questions, follow the steps of the data analysis process: Ask, Prepare, Process, Analyze, Share, and Act. Along the way, the Case Study Roadmap tables — including guiding questions and key tasks — will help you stay on the right path.
+#### Scenario
+##### You are a junior data analyst working on the marketing analyst team at Cyclistic, a bike-share company in Chicago. The director of marketing believes the company’s future success depends on maximizing the number of annual memberships. Therefore, your team wants to understand how casual riders and annual members use Cyclistic bikes differently. From these insights, your team will design a new marketing strategy to convert casual riders into annual members. But first, Cyclistic executives must approve your recommendations, so they must be backed up with compelling data insights and professional data visualizations.
+#### Characters and teams
+##### ● Cyclistic: A bike-share program that features more than 5,800 bicycles and 600 docking stations. Cyclistic sets itself apart by also offering reclining bikes, hand tricycles, and cargo bikes, making bike-share more inclusive to people with disabilities and riders who can’t use a standard two-wheeled bike. The majority of riders opt for traditional bikes; about 8% of riders use the assistive options. Cyclistic users are more likely to ride for leisure, but about 30% use the bikes to commute to work each day.
+##### ● Lily Moreno: The director of marketing and your manager. Moreno is responsible for the development of campaigns and initiatives to promote the bike-share program. These may include email, social media, and other channels.
+ 
+##### ● Cyclistic marketing analytics team: A team of data analysts who are responsible for collecting, analyzing, and reporting data that helps guide Cyclistic marketing strategy. You joined this team six months ago and have been busy learning about Cyclistic’s mission and business goals—as well as how you, as a junior data analyst, can help Cyclistic achieve them.
+##### ● Cyclistic executive team: The notoriously detail-oriented executive team will decide whether to approve the recommended marketing program.
+#### About the company
+##### In 2016, Cyclistic launched a successful bike-share offering. Since then, the program has grown to a fleet of 5,824 bicycles that are geotracked and locked into a network of 692 stations across Chicago. The bikes can be unlocked from one station and returned to any other station in the system anytime.
+##### Until now, Cyclistic’s marketing strategy relied on building general awareness and appealing to broad consumer segments. One approach that helped make these things possible was the flexibility of its pricing plans: single-ride passes, full-day passes, and annual memberships. Customers who purchase single-ride or full-day passes are referred to as casual riders. Customers who purchase annual memberships are Cyclistic members.
+##### Cyclistic’s finance analysts have concluded that annual members are much more profitable than casual riders. Although the pricing flexibility helps Cyclistic attract more customers, Moreno believes that maximizing the number of annual members will be key to future growth. Rather than creating a marketing campaign that targets all-new customers, Moreno believes there is a solid opportunity to convert casual riders into members. She notes that casual riders are already aware of the Cyclistic program and have chosen Cyclistic for their mobility needs.
+##### Moreno has set a clear goal: Design marketing strategies aimed at converting casual riders into annual members. In order to do that, however, the team needs to better understand how annual members and casual riders differ, why casual riders would buy a membership, and how digital media could affect their marketing tactics. Moreno and her team are interested in analyzing the Cyclistic historical bike trip data to identify trends.
+
+## Ask
+### Three questions will guide the future marketing program:
+###### 1. How do annual members and casual riders use Cyclistic bikes differently?
+###### 2. Why would casual riders buy Cyclistic annual memberships?
+###### 3. How can Cyclistic use digital media to in uence casual riders to become members?
+###### Moreno has assigned you the first question to answer: How do annual members and casual riders use Cyclistic bikes differently? You will produce a report with the following deliverable:
+
+###### . A clear statement of the business task
+###### ——the business task is to find out how annual members and casual riders use bikes differently, and find out why would casual ricders buy annual memeberships, and find out how can cyclistc use digital media to influence casual riders to become members. In order to acheive these goals, during the analysis, we need to go throuth the six stages of data analysis and formulate a full report about this business case
+
+
+##### How can your insights drive business decisions? 
+###### --- My insights can help the company to understand the reasons behind different customer decisions, and on basis of that, let the company know what to do to better convince potential customers to use anual membership.
+
+##### Consider key stakeholders
+###### ---the key stakeholders are Cyclistic, Lily Moreno, analytic team and executives.
+
+## Prepare
+
+####Guiding questions 
+##### ●  Where is your data located?--https://divvy-tripdata.s3.amazonaws.com/index.html
+##### ●  How is the data organized? --the data are named and sorted with appropriate naming conventions.It is categorized into the last 12 months.
+##### ●  Are there issues with bias or credibility in this data? Does your data ROCCC? -- Not really, the data is provided by a bike sharing company Divvy bikes. We take the data as relatively reliable and unbiased. It fullfills ROCCC.
+	
+##### ●  How are you addressing licensing, privacy, security, and accessibility? -- License. Bikeshare hereby grants to you a non-exclusive, royalty-free, limited, perpetual license to access, reproduce, analyze, copy, modify, distribute in your product or service and use the Data for any lawful purpose (“License”).
+##### ● How did you verify the data’s integrity? -- I verified the datas license agreement. The data is collected by an established company, and it only records Trip start day and time, Trip end day and time, Trip start station,Trip end station,Rider type (Member, Single Ride, and Day Pass). And it is anonyms.
+	
+##### ●  How does it help you answer your question? --The data provides the source for me to analyze the behaviour of our customers.
+##### ●  Are there any problems with the data? --yes, some fields are empty.
+
+
+
+##Process
+### Data cleaning
+
+#####Add a line to set a CRAN mirror at the beginning of your RMarkdown document. This ensures that whenever you use install.packages(), R knows where to look.
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+
+
+#### step 1 create new table from original data to be manipulated for analysis
+```{r echo=TRUE, results='hide'}
+library(data.table)
+library(here)
+# Removed setwd(), using here() instead **changed**
+csv_files <- list.files(path = here( "original"), pattern = "*.csv")  # Using here() **changed**
+combined_data <- rbindlist(lapply(csv_files, function(f) fread(file.path(here( "original"), f))))  # Using here() **changed**
+print(combined_data)
+summary(combined_data)
+colnames(combined_data)
+nrow(combined_data)
+```
+##### save combined_data, and Create a new table with the same structure divvy.staging_union_divvy_tripdata, export both
+```{r echo=TRUE, results='hide'}
+fwrite(combined_data, here( "output", "combined_data.csv"))  # Using here() **changed**
+library(dplyr)
+divvy.staging_union_divvy_tripdata <- combined_data
+```
+###### View the new table
+```{r}
+head(divvy.staging_union_divvy_tripdata)
+```
+###### Save the new table to a CSV file
+```{r echo=TRUE, results='hide'}
+fwrite(divvy.staging_union_divvy_tripdata, here( "output", "divvy.staging_union_divvy_tripdata.csv"))  # Using here() **changed**
+```
+
+
+#### step 2 data cleaning
+#####  step2.1 Check for missing values in the ride_id column
+```{r echo=TRUE, results='hide'}
+missing_ride_ids <- sum(is.na(divvy.staging_union_divvy_tripdata$ride_id)|divvy.staging_union_divvy_tripdata$ride_id == "")
+```
+###### Print the result
+```{r}
+if (missing_ride_ids > 0) {
+  print(paste("There are", missing_ride_ids, "missing values in the ride_id column."))
+} else {
+  print("There are no missing values in the ride_id column.")
+}
+```
+##### step 2.2 check data types of each column
+```{r}
+str(divvy.staging_union_divvy_tripdata)
+```
+
+##### 2.3Add the new column trip_duration
+###### 2.3.1 Convert character columns to POSIXct
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata$started_at <- as.POSIXct(divvy.staging_union_divvy_tripdata$started_at, format = "%Y-%m-%d %H:%M:%S")
+divvy.staging_union_divvy_tripdata$ended_at <- as.POSIXct(divvy.staging_union_divvy_tripdata$ended_at, format = "%Y-%m-%d %H:%M:%S")
+```
+###### 2.3.2Calculate trip duration in seconds
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata$trip_duration <- as.numeric(difftime(divvy.staging_union_divvy_tripdata$ended_at, divvy.staging_union_divvy_tripdata$started_at, units = "secs"))
+```
+###### 2.3.3 Display the first few rows to verify
+```{r}
+head(divvy.staging_union_divvy_tripdata)
+```
+###### if less than one full minute then show as 1 
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata$trip_duration <- ifelse(divvy.staging_union_divvy_tripdata$trip_duration < 60, 60, divvy.staging_union_divvy_tripdata$trip_duration)
+```
+######  Verify the update
+```{r}
+head(divvy.staging_union_divvy_tripdata)
+```
+###### add weekday column
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata$weekday <- weekdays(divvy.staging_union_divvy_tripdata$started_at)
+head(divvy.staging_union_divvy_tripdata)
+print(colnames(divvy.staging_union_divvy_tripdata))
+```
+
+#### step 2.4 deal with missing data in start/end_station_name/id
+###### step 2.4.1 Create and Populate a Temporary Mapping Table stations
+###### have a look of the station_mapping data
+###### Find Missing Start and End Station Details Based on Latitude and Longitude
+###### step 2.4.2 Create Temporary Tables for Known Stations:
+```{r echo=TRUE, results='hide'}
+stations <- divvy.staging_union_divvy_tripdata %>%
+  select(start_station_name, start_station_id, start_lat, start_lng) %>%
+  rename(station_name = start_station_name, 
+         station_id = start_station_id, 
+         lat = start_lat, 
+         lng = start_lng) %>%
+  distinct() %>%
+  bind_rows(
+    divvy.staging_union_divvy_tripdata %>%
+      select(end_station_name, end_station_id, end_lat, end_lng) %>%
+      rename(station_name = end_station_name, 
+             station_id = end_station_id, 
+             lat = end_lat, 
+             lng = end_lng) %>%
+      distinct()
+  ) %>%
+  distinct()
+```
+```{r}
+ print(stations)
+```
+ 
+##### Ensure geosphere is loaded
+```{r echo=TRUE, results='hide'}
+library(geosphere)
+library(dplyr)
+```
+
+###### step 2.4.3 Function to find the nearest station in the stations table
+```{r echo=TRUE, results='hide'}
+find_nearest_station_for_missing <- function(lat, lng, stations) {
+  distances <- distm(matrix(c(lng, lat), ncol = 2), stations[, c("lng", "lat")], fun = distHaversine)
+  nearest_station_index <- which.min(distances)
+  return(stations[nearest_station_index, ])
+}
+```
+###### Create a copy of stations to work with
+```{r echo=TRUE, results='hide'}
+complete_stations <- stations
+```
+
+###### Identify rows with missing or empty station_name or station_id
+```{r echo=TRUE, results='hide'}
+missing_stations <- complete_stations %>%
+  filter(is.na(station_name) | station_name == "" | is.na(station_id) | station_id == "")
+```
+
+###### Initialize the progress bar
+```{r echo=TRUE, results='hide'}
+pb <- txtProgressBar(min = 0, max = nrow(missing_stations), style = 3)
+```
+
+###### step 2.4.4 Iterate over missing rows and fill in details using the nearest known station
+```{r echo=TRUE, results='hide'}
+for (i in seq_len(nrow(missing_stations))) {
+  nearest_station <- find_nearest_station_for_missing(missing_stations$lat[i], missing_stations$lng[i], complete_stations)
+  
+  ###### Update the missing station_name and station_id with the nearest station's details
+  complete_stations[is.na(complete_stations$station_name) | complete_stations$station_name == "" & 
+                      complete_stations$lat == missing_stations$lat[i] & complete_stations$lng == missing_stations$lng[i], 
+                    "station_name"] <- nearest_station$station_name
+  
+  complete_stations[is.na(complete_stations$station_id) | complete_stations$station_id == "" & 
+                      complete_stations$lat == missing_stations$lat[i] & complete_stations$lng == missing_stations$lng[i], 
+                    "station_id"] <- nearest_station$station_id
+  
+  ###### Update the progress bar
+  setTxtProgressBar(pb, i)
+}
+###### Close the progress bar when done
+close(pb)
+```
+###### Print the updated stations table to verify
+```{r}
+print(complete_stations)
+```
+```{r echo=TRUE, results='hide'}
+fwrite(complete_stations,here( "output", "complete_stations"))  # Using here() **changed**)
+```
+
+
+###### Ensure complete_stations has unique lat/lng pairs and filter out invalid entries
+```{r echo=TRUE, results='hide'}
+complete_stations <- complete_stations %>%
+  group_by(lat, lng) %>%
+  summarise(
+    station_name = first(station_name),
+    station_id = first(station_id),
+    .groups = 'drop'
+  ) %>%
+  filter(
+    !is.na(station_name) & station_name != "",
+    !is.na(station_id) & station_id != ""
+  )
+
+still_missing_stations <- complete_stations %>%
+  filter(is.na(station_name) | station_name == "" | is.na(station_id) | station_id == "")
+```
+
+###### step 2.4.5 Perform the join for start stations
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata <- divvy.staging_union_divvy_tripdata %>%
+  left_join(complete_stations, by = c("start_lat" = "lat", "start_lng" = "lng"), suffix = c("", "_new"))
+```
+###### Ensure the columns are correctly named
+```{r}
+colnames(divvy.staging_union_divvy_tripdata)
+```
+###### how many missing before update
+```{r echo=TRUE, results='hide'}
+missing_in_staging <- divvy.staging_union_divvy_tripdata %>%
+  filter(is.na(start_station_name) | start_station_name == "" | is.na(start_station_id) | start_station_id == "")
+```
+
+###### step 2.4.6 Update missing start station details directly
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata <- divvy.staging_union_divvy_tripdata %>%
+  mutate(
+    start_station_name = if_else(
+      is.na(start_station_name) | start_station_name == "",
+      station_name,
+      start_station_name
+    ),
+    start_station_id = if_else(
+      is.na(start_station_id) | start_station_id == "",
+      station_id,
+      start_station_id
+    )
+  ) %>%
+  select(-station_name, -station_id)
+colnames(divvy.staging_union_divvy_tripdata)
+```
+
+###### how many missing after update
+```{r echo=TRUE, results='hide'}
+missing_in_staging <- divvy.staging_union_divvy_tripdata %>%
+  filter(is.na(start_station_name) | start_station_name == "" | is.na(start_station_id) | start_station_id == "")
+```
+
+###### Perform left join to get new end station details
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata <- divvy.staging_union_divvy_tripdata %>%
+  left_join(complete_stations, by = c("end_lat" = "lat", "end_lng" = "lng"), suffix = c("", "_new"))
+```
+
+###### how many end station missing before update
+```{r echo=TRUE, results='hide'}
+missing_in_staging <- divvy.staging_union_divvy_tripdata %>%
+  filter(is.na(end_station_name) | end_station_name == "" | is.na(end_station_id) | end_station_id == "")
+num_missing_end_stations <- nrow(missing_in_staging)
+```
+```{r}
+print(num_missing_end_stations)
+```
+###### step 2.4.7 Update missing end station details directly
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata <- divvy.staging_union_divvy_tripdata %>%
+  mutate(
+    end_station_name = if_else(
+      is.na(end_station_name) | end_station_name == "",
+      station_name,
+      end_station_name
+    ),
+    end_station_id = if_else(
+      is.na(end_station_id) | end_station_id == "",
+      station_id,
+      end_station_id
+    )
+  ) %>%
+  select(-station_name, -station_id)
+```
+###### how many end station missing after update
+```{r echo=TRUE, results='hide'}
+missing_in_staging <- divvy.staging_union_divvy_tripdata %>%
+  filter(is.na(end_station_name) | end_station_name == "" | is.na(end_station_id) | end_station_id == "")
+num_missing_end_stations <- nrow(missing_in_staging)
+```
+```{r}
+print(num_missing_end_stations)
+```
+
+###### step 2.4.8 Delete rows with missing or empty station details, there were still 90k missing rows
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata_clean <- divvy.staging_union_divvy_tripdata %>%
+  filter(!is.na(start_station_name) & start_station_name != "" &
+           !is.na(start_station_id) & start_station_id != "" &
+           !is.na(end_station_name) & end_station_name != "" &
+           !is.na(end_station_id) & end_station_id != "")
+```
+
+###### Convert trip_duration from seconds to minutes
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata_clean <- divvy.staging_union_divvy_tripdata_clean %>%
+  mutate(trip_duration_minutes = round(trip_duration / 60, 2))
+```
+######look around the data now, and summarize it, maybe export to rmarkdown
+###### Save the updated dataset
+```{r echo=TRUE, results='hide'}
+fwrite(divvy.staging_union_divvy_tripdata_clean, here( "output", "divvy.staging_union_divvy_tripdata_clean.csv"))  # Using here() **changed**)
+```
+
+
+
+### analyze
+#### step 3
+##### 3.1 add ride_distance
+###### Calculate the distance between the start and end stations
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata_clean <- divvy.staging_union_divvy_tripdata_clean %>%
+  mutate(ride_distance = distHaversine(matrix(c(start_lng, start_lat), ncol = 2),
+                                       matrix(c(end_lng, end_lat), ncol = 2)))
+```
+###### Convert the ride distance from meters to kilometers for better readability
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata_clean <- divvy.staging_union_divvy_tripdata_clean %>%
+  mutate(ride_distance_km = round(ride_distance / 1000, 2))
+```
+###### Remove the ride_distance column
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata_clean <- divvy.staging_union_divvy_tripdata_clean %>%
+  select(-ride_distance)
+```
+
+###### Verify the addition of the new columns
+```{r}
+head(divvy.staging_union_divvy_tripdata_clean)
+```
+
+###### List unique values in the member_casual column, to see how many different membership type there are
+```{r echo=TRUE, results='hide'}
+unique_member_casual <- unique(divvy.staging_union_divvy_tripdata_clean$member_casual)
+```
+###### Display the unique types
+```{r echo=TRUE, results='hide'}
+print(unique_member_casual)
+```
+###### Count the occurrences of each type in the member_casual column
+```{r echo=TRUE, results='hide'}
+member_counts <- table(divvy.staging_union_divvy_tripdata_clean$member_casual)
+```
+###### Display the counts
+```{r}
+print(member_counts)
+```
+
+###### 3.2 Calculate the average ride_distance/trip_duration&speed for members and casual riders
+###### Group by rider type and calculate the average ride_distance/trip_duration
+```{r echo=TRUE, results='hide'}
+average_distance_duration <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(member_casual) %>%  ###### Assuming the column name is 'member_casual' to differentiate between members and casual riders
+  summarise(
+    avg_distance_per_trip = mean(ride_distance_km, na.rm = TRUE),
+    avg_trip_duration = mean(trip_duration_minutes, na.rm = TRUE),
+    avg_distance_per_minute = mean(ride_distance_km / trip_duration_minutes, na.rm = TRUE)
+  )
+```
+###### Display the results
+```{r}
+print(average_distance_duration)
+```
+
+
+#### 3.3 Identify the Top 10 start_station_name for Each Rider Type
+###### Group by member_casual and start_station_name, then count the trips
+```{r echo=TRUE, results='hide'}
+top_start_stations <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(member_casual, start_station_name) %>%
+  summarise(trip_count = n()) %>%
+  arrange(member_casual, desc(trip_count)) %>%
+  slice_head(n = 10) %>%
+  ungroup()
+```
+###### Display the top 10 start stations for each rider type
+```{r}
+print("Top 10 Start Stations for Each Rider Type:")
+print(top_start_stations)
+```
+
+#### 3.4 top 10 end stations for each rider type
+###### Group by member_casual and end_station_name, then count the trips
+```{r echo=TRUE, results='hide'}
+top_end_stations <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(member_casual, end_station_name) %>%
+  summarise(trip_count = n()) %>%
+  arrange(member_casual, desc(trip_count)) %>%
+  slice_head(n = 10) %>%
+  ungroup()
+```
+###### Display the top 10 end stations for each rider type
+```{r}
+print("Top 10 End Stations for Each Rider Type:")
+print(top_end_stations)
+```
+
+
+#### 3.5 which weekday most, casual & member
+```{r}
+top_weekday <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(member_casual, weekday) %>%
+  summarise(trip_count = n()) %>%
+  arrange(member_casual, desc(trip_count)) %>%
+  slice_head(n = 7) %>% 
+  ungroup()
+print(top_weekday)
+```
+
+#### 3.6 most casual start time(morning/afternoon) & most member start time(morning/afternoon)
+###### Add a new column to categorize trips as "morning" or "afternoon"
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata_clean <- divvy.staging_union_divvy_tripdata_clean %>%
+  mutate(time_of_day = ifelse(format(started_at, "%H") < 12, "morning", "afternoon"))
+```
+###### Group by member_casual and time_of_day, then count the trips
+```{r echo=TRUE, results='hide'}
+top_time_of_day <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(member_casual, time_of_day) %>%
+  summarise(trip_count = n()) %>%
+  arrange(member_casual, desc(trip_count)) %>%
+  slice_head(n = 2) %>%   ###### Select the most frequent time_of_day for each member_casual group
+  ungroup()
+```
+```{r}
+print(top_time_of_day)
+```
+
+
+
+#### 3.7 Calculate the average ride_length by day_of_week and member_casual
+```{r echo=TRUE, results='hide'}
+average_ride_length_by_day_and_user_type <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(weekday, member_casual) %>%
+  summarize(average_ride_length = mean(trip_duration_minutes, na.rm = TRUE)) %>%
+  arrange(member_casual,average_ride_length)  ###### Optional: arrange the results for better readability
+```
+```{r}
+print(average_ride_length_by_day_and_user_type)
+```
+
+
+
+### share
+#### step 4 Visualization, visualise each of the calculations above
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.path = '/Users/dongyuangao/Desktop/Capstone project google data analysis certificate/data set zips/plots_output/', fig.show='asis')
+```
+
+#####step 4.1 Bar chart for top 10 start stations
+```{r plot_top10_start_stations, echo=TRUE}
+library(ggplot2)
+p <-ggplot(top_start_stations, aes(x = reorder(start_station_name, -trip_count), y = trip_count, fill = member_casual)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Top 10 Start Stations by Rider Type", x = "Start Station", y = "Number of Trips") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p
+```
+
+##### step 4.2 Bar chart for start time of day
+```{r plot_star_time_of_the_day, echo=TRUE}
+p <-ggplot(top_time_of_day, aes(x = time_of_day, y = trip_count, fill = member_casual)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Trips by Time of Day (Morning/Afternoon)", x = "Time of Day", y = "Number of Trips")
+p
+```
+  
+##### step 4.3 Stacked Bar Chart for Weekday Distribution
+```{r plot_weekday_distribution, echo=TRUE}
+p <-ggplot(divvy.staging_union_divvy_tripdata_clean, aes(x = weekday, fill = member_casual)) +
+  geom_bar(position = "stack") +
+  labs(title = "Trips Distribution by Weekday", x = "Weekday", y = "Number of Trips") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p
+```
+  
+##### step 4.4 Pie Charts or Donut Charts for Time of Day Distribution,Group and Summarize the Data
+```{r echo=TRUE, results='hide'}
+time_of_day_distribution <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(member_casual, time_of_day) %>%
+  summarise(trip_count = n()) %>%
+  arrange(member_casual, desc(trip_count))
+```
+```{r plot_time_of_day_distribution, echo=TRUE, fig.show='asis'}
+p <-ggplot(time_of_day_distribution, aes(x = "", y = trip_count, fill = time_of_day)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  facet_wrap(~member_casual) +
+  labs(title = "Time of Day Distribution by Rider Type")+
+  scale_y_continuous(labels = scales::comma)
+p
+```
+
+
+
+#### 4.6 Line Charts for Trend Analysis Over Time
+######Adding a Column to Extract Date
+###### Ensure the 'started_at' column is in POSIXct format
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata_clean$started_at <- as.POSIXct(divvy.staging_union_divvy_tripdata_clean$started_at)
+```
+
+###### Add a new column 'date' by extracting the date from 'started_at'
+```{r echo=TRUE, results='hide'}
+divvy.staging_union_divvy_tripdata_clean <- divvy.staging_union_divvy_tripdata_clean %>%
+  mutate(date = as.Date(started_at))
+```
+###### Verify the new column has been added
+```{r echo=TRUE, results='hide'}
+head(divvy.staging_union_divvy_tripdata_clean)
+```
+
+###### Summarize the data by date and member_casual
+```{r echo=TRUE, results='hide'}
+daily_trips <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(date, member_casual) %>%
+  summarise(trip_count = n(), .groups = 'drop')
+```
+
+###### Plot the line chart for trend analysis
+```{r plot_trend, echo=TRUE, fig.show='asis'}
+p <-ggplot(daily_trips, aes(x = date, y = trip_count, color = member_casual, group = member_casual)) +
+  geom_line() +
+  labs(title = "Trend of Trips Over Time", x = "Date", y = "Number of Trips", color = "Rider Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  ###### Rotate x-axis labels if needed
+p
+```
+
+
+
+
+##### step 4.7 mapping the finding,member&casual?
+###### Install necessary packages
+```{r echo=TRUE, results='hide'}
+######install.packages("leaflet")
+######install.packages("dplyr")
+######install.packages("htmlwidgets")  ###### For saving the map
+######install.packages("leaflet.extras")  ###### For additional leaflet features
+```
+
+
+###### Load necessary libraries
+```{r echo=TRUE, results='hide'}
+library(leaflet)
+library(dplyr)
+library(htmlwidgets)
+library(leaflet.extras)
+```
+
+###### Summarize trip count by member type and station location
+```{r echo=TRUE, results='hide'}
+trip_count_station <- divvy.staging_union_divvy_tripdata_clean %>%
+  group_by(member_casual, start_station_name, start_lat, start_lng) %>%
+  summarise(trip_count = n(), .groups = 'drop')
+```
+
+###### Separate data for members and casuals
+```{r echo=TRUE, results='hide'}
+member_trips <- trip_count_station %>% filter(member_casual == "member")
+casual_trips <- trip_count_station %>% filter(member_casual == "casual")
+```
+
+###### Create leaflet map
+```{r creat_map, echo=TRUE, results='hide'}
+map <- leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers( ###### Add member trips cluster layer
+    data = member_trips,
+    lng = ~start_lng, lat = ~start_lat,
+    radius = ~log(trip_count + 1) * 5,  ###### Adding 1 to avoid log(0) issues
+    color = "blue",
+    group = "Members",
+    popup = ~paste("Station:", start_station_name, "<br>",
+                   "Trips:", trip_count, "<br>",
+                   "Rider Type:", member_casual),
+    clusterOptions = markerClusterOptions()
+  ) %>%
+
+
+
+  addCircleMarkers(###### Add casual trips cluster layer
+    data = casual_trips,
+    lng = ~start_lng, lat = ~start_lat,
+    radius = ~log(trip_count + 1) * 5,  ###### Adding 1 to avoid log(0) issues
+    color = "red",
+    group = "Casuals",
+    popup = ~paste("Station:", start_station_name, "<br>",
+                   "Trips:", trip_count, "<br>",
+                   "Rider Type:", member_casual),
+    clusterOptions = markerClusterOptions()
+  ) %>%
+  addLayersControl(###### Add layer control
+    overlayGroups = c("Members", "Casuals"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  addLegend(####### Add a legend
+    position = "bottomright",
+    colors = c("blue", "red"),
+    labels = c("Members", "Casuals"),
+    title = "Rider Type"
+  )
+```
+
+###### Save the map as an HTML file
+```{r echo=TRUE, results='hide'}
+saveWidget(map, file = here("output", "capstone-project-google_cycle_trip.html"))  # Using here() **changed**)
+```
+######show the map
+```{r show_map, echo=TRUE}
+map
+```
+
+##Share
+####Guiding questions
+######● Were you able to answer the question of how annual members and casual riders use Cyclistic bikes di erently?--yes, see ppt
+######● What story does your data tell?-- the analysis mainly gives us the story that, casual and members riders are 2 different groups with distinct user cases, one for leisure on weekends, and the other for daily work commute.
+######● How do your findings relate to your original question? --it explains the behaviour differences, and provide a observation basis for later actions.
+######● Who is your audience? What is the best way to communicate with them?-- Lily Moreno, analytic team and executives.
+######● Can data visualization help you share your findings?--yes, it helps a lot to share my findings to the key stakeholders, for example, in an presentation, it makes it much faster and easier for everybody to understand the data and story.
+######● Is your presentation accessible to your audience?--yes it will be in rmarkdown, ppt and shared on kaggle, so that everybody have access. It is also recommended to hold a meeting for this, with all stakeholders involved.
+
+#### Key tasks
+######● Determine the best way to share your findings..--using PPT or html or rmarkdown, kaggle
+######● Create effective data visualizations.--done in R
+######● Present your findings.--using PPT or html or rmarkdown
+######● Ensure your work is accessible.--later will be shared on kaggle
+
+#### Deliverable
+######● Supporting visualizations and key findings --all plots in R code, plot view, and html map, end result will be in rmark down
+##### ● upload project to Kaggle
+
+### Act
+#### step 5: Top three sugestions to Morena
+##### 1 Make a membership plan that suits the casual users, for example, for weekends, and it might be slightly cheaper than normal membership. So that we can convert more casual users to members.
+##### 2 Promote the offer around very densely used areas and stations. For example, Streeter Dr. Grand Ave.
+##### 3 The focus of the promotion should be centered around weekend trip, city tour and leisure ridings in the summer. Detailed areas and stations can be found in interative map file: map.html.
+
+#####use git, commit and push to github
+
+
